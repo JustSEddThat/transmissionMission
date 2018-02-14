@@ -15,76 +15,113 @@ public class Planet : MonoBehaviour
 
 	public float health;
 
-	private Slider resources;
-
-	[Range(1,6)]
-	public int diseaseLevel;
+	public Slider healthSlider;
+	public Slider resources;
 
 	public float builtPower;
+
 	#endregion
+
+	public Keybinding keybind;
 
 	public float radius;
 
-	public GameObject virus;
+	public GameObject[] virus;
 
-	void Start()
+	void Start ()
 	{
 		//slider component on this object or any children
-		resources = GetComponentInChildren<Slider> ();
+		//resources = GetComponentInChildren<Slider> ();
 
 	}
+
 	void Update ()
 	{
-		if (Input.GetKeyDown (KeyCode.Z))
+		if(Input.GetKeyDown (keybind.button1))
 		{
-			Shoot ();
+			BuildPower (1);
+		}
+
+		if(Input.GetKeyDown (keybind.button2))
+		{
+			BuildPower (2);
+
+		}
+
+		if(Input.GetKeyDown (keybind.button3))
+		{
+			BuildPower (3);
+
+		}
+
+		if(Input.GetKeyDown (keybind.button4))
+		{
+			BuildPower (4);
+
+		}
+
+		if(Input.GetKeyDown (keybind.button5))
+		{
+			BuildPower (5);
+
+		}
+
+		if(Input.GetKeyDown (keybind.button6))
+		{
+			BuildPower (6);
+
+		}
+
+	}
+
+	public void BuildPower (int lvl)
+	{
+		builtPower = ConvertLvlToPower (lvl);
+
+		if (lvl <= resources.value)
+		{
+			resources.value -= (float)lvl;
+			Shoot (lvl);
+
+		}
+
+	}
+
+	private float ConvertLvlToPower (int lvl)
+	{
+		switch (lvl)
+		{
+			case 1:
+				return 50;
+			case 2: 
+				return 100;
+			case 3:
+				return 200;
+			case 4:
+				return 350;
+			case 5:
+				return 500;
+			case 6:
+				return 1000;
+			default:
+				Debug.Log ("some shit wrong bro");
+				return 3;
 		}
 	}
 
-	public void BuildPower(int lvl)
-	{
-		builtPower += ConvertLvlToPower (lvl);
-
-		resources.value -= (float)lvl;
-
-		Shoot ();
-	}
-
-	private float ConvertLvlToPower(int lvl)
-	{
-		switch(lvl)
-		{
-		case 1:
-			return 50;
-		case 2: 
-			return 100;
-		case 3:
-			return 200;
-		case 4:
-			return 350;
-		case 5:
-			return 500;
-		case 6:
-			return 1000;
-		default:
-			Debug.Log("some shit wrong bro");
-			return 3;
-		}
-	}
-	void Shoot ()
+	void Shoot (int lvl)
 	{
 		if (virus != null)
 		{
-			//Vector3 loc = Random.insideUnitCircle * radius;
 
-			GameObject shot = Instantiate (virus, transform.position, Quaternion.identity);
+			Vector3 loc = (Vector2)transform.position + Random.insideUnitCircle * radius;
+			GameObject shot = Instantiate (virus [lvl - 1], loc, Quaternion.identity);
 
-			if (shot.GetComponent<Virus> ())
-			{
-				shot.GetComponent<Virus> ().dmg = builtPower;
-				shot.GetComponent<Virus> ().player = this;
-				//Debug.Log ("Spawned by " + this.gameObject);
-			}
+			shot.GetComponent<Virus> ().dmg = builtPower;
+			shot.GetComponent<Virus> ().player = this;
+
+			shot.GetComponent<Virus> ().speed = (float)(7 - lvl) / 100;
+		
 		}
 
 		//reset built power after shooting projectile
@@ -93,6 +130,7 @@ public class Planet : MonoBehaviour
 
 	public void TakeDamage (float dmg)
 	{
-		health -= dmg;
+		healthSlider.value -= dmg;
+
 	}
 }
